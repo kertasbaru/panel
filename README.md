@@ -10,6 +10,7 @@ Website PPOB adalah platform pembayaran online yang memungkinkan pengguna untuk 
 |----------|-----------|
 | Backend | Node.js (Express.js) |
 | Frontend | React.js (Vite) + TailwindCSS |
+| Animasi | Framer Motion + CSS Animations |
 | Database | MySQL (Sequelize ORM) |
 | Cache & Session | Redis |
 | Autentikasi | JWT (JSON Web Token) + OTP Email |
@@ -907,7 +908,8 @@ VITE_URL=https://wuzzstore.my.id
     "react-icons": "^5.0.x",
     "recharts": "^2.12.x",
     "dayjs": "^1.11.x",
-    "clsx": "^2.1.x"
+    "clsx": "^2.1.x",
+    "framer-motion": "^11.0.x"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.x",
@@ -997,17 +999,39 @@ VITE_URL=https://wuzzstore.my.id
 
 ## 13. Referensi Repository GitHub
 
-Berikut beberapa repositori GitHub yang dapat dijadikan referensi arsitektur dan implementasi:
+Berikut repositori GitHub yang dijadikan referensi arsitektur, desain UI, dan implementasi:
+
+### 13.1 Referensi Backend
 
 | Referensi | URL | Keterangan |
 |-----------|-----|------------|
 | Express.js Best Practice | https://github.com/goldbergyoni/nodebestpractices | Best practice Node.js |
 | Express API Boilerplate | https://github.com/hagopj13/node-express-boilerplate | Boilerplate Express.js dengan JWT |
 | Sequelize Example | https://github.com/sequelize/express-example | Contoh integrasi Express + Sequelize |
+
+### 13.2 Referensi Frontend & UI
+
+| Referensi | URL | Keterangan |
+|-----------|-----|------------|
+| Framer Motion | https://github.com/framer/motion | Library animasi JavaScript untuk React (page transitions, stagger animations) |
 | React Vite Starter | https://github.com/joaopaulomoraes/reactjs-vite-tailwindcss-boilerplate | Boilerplate React + Vite + TailwindCSS |
 | Zustand State Management | https://github.com/pmndrs/zustand | State management ringan untuk React |
+| Tailwind UI Components | https://github.com/tailwindlabs/tailwindcss | Framework CSS utility-first untuk desain modern |
+| Headless UI | https://github.com/tailwindlabs/headlessui | Komponen UI accessible untuk TailwindCSS |
+| React Icons | https://github.com/react-icons/react-icons | Koleksi icon SVG populer untuk React |
+| Recharts | https://github.com/recharts/recharts | Library grafik berbasis React untuk dashboard |
+| React Hook Form | https://github.com/react-hook-form/react-hook-form | Library form performant untuk React |
+| React Hot Toast | https://github.com/timolins/react-hot-toast | Notifikasi toast ringan untuk React |
+
+### 13.3 Referensi Desain PPOB & Payment Platform
+
+| Referensi | URL | Keterangan |
+|-----------|-----|------------|
 | Midtrans Node.js | https://github.com/Midtrans/midtrans-nodejs-client | Library payment gateway Midtrans |
 | DigiFlazz API | https://developer.digiflazz.com/api | Dokumentasi API provider PPOB |
+| Shadcn UI | https://github.com/shadcn-ui/ui | Referensi komponen UI modern (card, button, input design) |
+| Tremor Dashboard | https://github.com/tremorlabs/tremor | Referensi desain dashboard analytics React |
+| Cal.com | https://github.com/calcom/cal.com | Referensi arsitektur aplikasi fullstack Next.js/React |
 
 ---
 
