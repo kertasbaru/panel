@@ -8,6 +8,7 @@ import AdminRoute from './AdminRoute';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import VerifyOTPPage from '../pages/auth/VerifyOTPPage';
 
 // Main pages
 import DashboardPage from '../pages/dashboard/DashboardPage';
@@ -29,6 +30,7 @@ const AppRoutes = () => {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verify-otp" element={<VerifyOTPPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
 

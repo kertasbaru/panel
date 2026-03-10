@@ -44,6 +44,7 @@ const register = async (data) => {
     const otp = await otpService.generateAndStore(email);
     await emailService.sendOTP(email, otp);
   } catch (emailError) {
+    await Balance.destroy({ where: { user_id: user.id } });
     await user.destroy();
     const err = new Error('Gagal mengirim email verifikasi. Silakan coba lagi');
     err.statusCode = 500;
