@@ -40,8 +40,15 @@ const register = async (data) => {
 
   await Balance.create({ user_id: user.id, amount: 0 });
 
-  const otp = await otpService.generateAndStore(email);
-  await emailService.sendOTP(email, otp);
+  try {
+    const otp = await otpService.generateAndStore(email);
+    await emailService.sendOTP(email, otp);
+  } catch (emailError) {
+    await user.destroy();
+    const err = new Error('Gagal mengirim email verifikasi. Silakan coba lagi');
+    err.statusCode = 500;
+    throw err;
+  }
 
   return {
     user: user.toSafeObject(),
@@ -200,9 +207,15 @@ const resendOTP = async (data) => {
     throw err;
   }
 
-  if (user.status !== 'inactive') {
-    const err = new Error('Akun sudah aktif atau tidak memerlukan verifikasi');
+  if (user.status === 'active') {
+    const err = new Error('Akun sudah aktif dan terverifikasi');
     err.statusCode = 400;
+    throw err;
+  }
+
+  if (user.status === 'suspended') {
+    const err = new Error('Akun Anda telah disuspend');
+    err.statusCode = 403;
     throw err;
   }
 
