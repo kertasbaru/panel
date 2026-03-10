@@ -5,8 +5,8 @@ const { authorize } = require('../middlewares/roleMiddleware');
 const { validate } = require('../middlewares/validator');
 const { createDeposit } = require('../validators/depositValidator');
 
-router.get('/', authenticate, depositController.list);
-router.get('/all', authenticate, authorize('admin'), depositController.listAll);
+router.get('/', authenticate, depositController.getAll);
+router.get('/all', authenticate, authorize('admin'), depositController.getAllAdmin);
 router.get('/:id', authenticate, depositController.getById);
 router.post('/', authenticate, validate(createDeposit), depositController.create);
 router.put('/:id/confirm', authenticate, authorize('admin'), depositController.confirm);
