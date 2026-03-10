@@ -128,6 +128,17 @@ const forgotPassword = async (data) => {
     return { message: 'Jika email terdaftar, link reset password akan dikirim' };
   }
 
+  const resetToken = jwt.sign(
+    { id: user.id, email: user.email },
+    jwtConfig.accessSecret,
+    { expiresIn: '1h' }
+  );
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+  await emailService.sendResetPassword(email, resetLink);
+
   return { message: 'Jika email terdaftar, link reset password akan dikirim' };
 };
 

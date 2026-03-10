@@ -92,4 +92,81 @@ const sendOTP = async (email, otp) => {
   });
 };
 
-module.exports = { sendOTP };
+const buildResetPasswordEmail = (resetLink) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f7;padding:40px 0;">
+        <tr>
+          <td align="center">
+            <table width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+              <tr>
+                <td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:32px;text-align:center;">
+                  <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;">PPOB Platform</h1>
+                  <p style="color:#e0d4f7;margin:8px 0 0;font-size:14px;">Reset Password</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:40px 32px;">
+                  <p style="color:#333333;font-size:16px;margin:0 0 16px;line-height:1.6;">Halo,</p>
+                  <p style="color:#555555;font-size:15px;margin:0 0 28px;line-height:1.6;">Kami menerima permintaan untuk mereset password akun Anda. Klik tombol di bawah ini untuk membuat password baru:</p>
+                  <div style="text-align:center;margin:0 0 28px;">
+                    <a href="${resetLink}" style="display:inline-block;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;">Reset Password</a>
+                  </div>
+                  <p style="color:#888888;font-size:13px;margin:0 0 8px;line-height:1.6;">⏳ Link ini berlaku selama <strong>1 jam</strong>.</p>
+                  <p style="color:#888888;font-size:13px;margin:0 0 16px;line-height:1.6;">Jika Anda tidak meminta reset password, abaikan email ini.</p>
+                  <p style="color:#aaaaaa;font-size:12px;margin:0;line-height:1.6;word-break:break-all;">Atau salin link berikut: ${resetLink}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="background-color:#f9fafb;padding:20px 32px;text-align:center;border-top:1px solid #eee;">
+                  <p style="color:#aaaaaa;font-size:12px;margin:0;">&copy; ${new Date().getFullYear()} PPOB Platform. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+};
+
+const sendResetPassword = async (email, resetLink) => {
+  const oauth2Client = createOAuth2Client();
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+  const subject = 'Reset Password - PPOB Platform';
+  const htmlBody = buildResetPasswordEmail(resetLink);
+
+  const messageParts = [
+    `From: PPOB Platform <${process.env.GOOGLE_EMAIL}>`,
+    `To: ${email}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=utf-8',
+    '',
+    htmlBody,
+  ];
+  const message = messageParts.join('\n');
+
+  const encodedMessage = Buffer.from(message)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: {
+      raw: encodedMessage,
+    },
+  });
+};
+
+module.exports = { sendOTP, sendResetPassword };
