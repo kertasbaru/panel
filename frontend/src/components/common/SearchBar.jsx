@@ -1,0 +1,18 @@
+import { HiSearch } from 'react-icons/hi';
+
+const SearchBar = ({ value, onChange, placeholder = 'Cari...' }) => {
+  return (
+    <div className="relative">
+      <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+      />
+    </div>
+  );
+};
+
+export default SearchBar;

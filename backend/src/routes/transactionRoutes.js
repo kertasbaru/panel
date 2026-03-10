@@ -1,0 +1,15 @@
+const router = require('express').Router();
+const transactionController = require('../controllers/transactionController');
+const { authenticate } = require('../middlewares/authMiddleware');
+const { authorize } = require('../middlewares/roleMiddleware');
+const { validate } = require('../middlewares/validator');
+const { createTransaction, inquiry } = require('../validators/transactionValidator');
+const { transactionLimiter } = require('../middlewares/rateLimiter');
+
+router.get('/', authenticate, transactionController.getAll);
+router.get('/all', authenticate, authorize('admin'), transactionController.getAllAdmin);
+router.get('/:id', authenticate, transactionController.getById);
+router.post('/', authenticate, transactionLimiter, validate(createTransaction), transactionController.create);
+router.post('/inquiry', authenticate, validate(inquiry), transactionController.inquiry);
+
+module.exports = router;
