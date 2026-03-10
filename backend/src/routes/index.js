@@ -16,6 +16,7 @@ router.use(apiLimiter);
 router.use('/auth', authLimiter, authRoutes);
 router.use('/users', userRoutes);
 router.use('/products', productRoutes);
+// /categories maps to productRoutes because product routes include /category/:slug endpoint
 router.use('/categories', productRoutes);
 router.use('/transactions', transactionRoutes);
 router.use('/balance', balanceRoutes);
