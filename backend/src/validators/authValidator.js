@@ -30,4 +30,8 @@ const resendOTP = Joi.object({
   email: Joi.string().email().required(),
 });
 
-module.exports = { register, login, forgotPassword, resetPassword, verifyOTP, resendOTP };
+const googleLogin = Joi.object({
+  credential: Joi.string().required(),
+});
+
+module.exports = { register, login, forgotPassword, resetPassword, verifyOTP, resendOTP, googleLogin };

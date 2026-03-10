@@ -82,4 +82,13 @@ const resendOTP = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe, verifyOTP, resendOTP };
+const googleLogin = async (req, res, next) => {
+  try {
+    const result = await authService.googleLogin(req.body);
+    return success(res, result, 'Login dengan Google berhasil');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe, verifyOTP, resendOTP, googleLogin };

@@ -1,12 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { login as loginApi } from '../../api/authApi';
+import { login as loginApi, googleLogin as googleLoginApi } from '../../api/authApi';
 import { useAuthStore } from '../../store/authSlice';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { HiOutlineLockClosed, HiOutlineMail, HiOutlineLogin } from 'react-icons/hi';
+import { GoogleLogin } from '@react-oauth/google';
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -26,6 +27,24 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const { data } = await googleLoginApi({ credential: credentialResponse.credential });
+      login(data.data.user, data.data.accessToken, data.data.refreshToken);
+      toast.success('Login dengan Google berhasil!');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login dengan Google gagal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Login dengan Google gagal');
   };
 
   return (
@@ -78,6 +97,26 @@ const LoginPage = () => {
           Masuk
         </Button>
       </form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white text-gray-400">atau</span>
+        </div>
+      </div>
+
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          text="signin_with"
+          shape="rectangular"
+          width="100%"
+          locale="id"
+        />
+      </div>
 
       <div className="mt-6 text-center text-sm text-gray-500">
         Belum punya akun?{' '}

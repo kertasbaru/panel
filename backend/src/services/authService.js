@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const { User, Balance } = require('../models');
 const jwtConfig = require('../config/jwt');
 const otpService = require('./otpService');
@@ -237,4 +238,83 @@ const resendOTP = async (data) => {
   return null;
 };
 
-module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe, verifyOTP, resendOTP };
+const googleLogin = async (data) => {
+  const { credential } = data;
+
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+  let ticket;
+  try {
+    ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+  } catch (error) {
+    const err = new Error('Token Google tidak valid');
+    err.statusCode = 401;
+    throw err;
+  }
+
+  const payload = ticket.getPayload();
+  const { sub: googleId, email, name, picture } = payload;
+
+  if (!payload.email_verified) {
+    const err = new Error('Email Google belum terverifikasi');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  let user = await User.findOne({ where: { google_id: googleId } });
+
+  if (!user) {
+    user = await User.findOne({ where: { email } });
+
+    if (user) {
+      if (user.auth_provider === 'local' && !user.google_id) {
+        await user.update({
+          google_id: googleId,
+          avatar: user.avatar || picture,
+        });
+      }
+    } else {
+      const [newUser] = await User.findOrCreate({
+        where: { email },
+        defaults: {
+          name,
+          email,
+          phone: null,
+          password: null,
+          google_id: googleId,
+          auth_provider: 'google',
+          avatar: picture,
+          status: 'active',
+        },
+      });
+      user = newUser;
+
+      const existingBalance = await Balance.findOne({ where: { user_id: user.id } });
+      if (!existingBalance) {
+        await Balance.create({ user_id: user.id, amount: 0 });
+      }
+    }
+  }
+
+  if (user.status === 'suspended') {
+    const err = new Error('Akun Anda telah disuspend');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  if (user.status === 'inactive') {
+    await user.update({ status: 'active' });
+  }
+
+  const tokens = generateTokens(user);
+
+  return {
+    user: user.toSafeObject(),
+    ...tokens,
+  };
+};
+
+module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe, verifyOTP, resendOTP, googleLogin };

@@ -1,15 +1,18 @@
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { register as registerApi } from '../../api/authApi';
+import { register as registerApi, googleLogin as googleLoginApi } from '../../api/authApi';
+import { useAuthStore } from '../../store/authSlice';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { HiOutlineUserAdd, HiOutlineMail, HiOutlinePhone, HiOutlineLockClosed, HiOutlineUser } from 'react-icons/hi';
+import { GoogleLogin } from '@react-oauth/google';
 
 const RegisterPage = () => {
   const { register, handleSubmit, formState: { errors }, watch } = useForm();
   const [loading, setLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
   const password = watch('password');
 
@@ -30,6 +33,24 @@ const RegisterPage = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const { data } = await googleLoginApi({ credential: credentialResponse.credential });
+      login(data.data.user, data.data.accessToken, data.data.refreshToken);
+      toast.success('Login dengan Google berhasil!');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login dengan Google gagal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Login dengan Google gagal');
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-6">
@@ -38,6 +59,26 @@ const RegisterPage = () => {
         </div>
         <h2 className="text-2xl font-bold text-gray-900">Buat Akun Baru</h2>
         <p className="text-sm text-gray-500 mt-1">Daftar untuk mulai menggunakan layanan PPOB</p>
+      </div>
+
+      <div className="flex justify-center mb-4">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          text="signup_with"
+          shape="rectangular"
+          width="100%"
+          locale="id"
+        />
+      </div>
+
+      <div className="relative mb-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white text-gray-400">atau daftar dengan email</span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-1">

@@ -17,18 +17,21 @@ CREATE TABLE IF NOT EXISTS `users` (
   `uuid` VARCHAR(36) NOT NULL,
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
-  `phone` VARCHAR(20) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(20) NULL,
+  `password` VARCHAR(255) NULL,
   `role` ENUM('admin', 'agen', 'member') DEFAULT 'member',
   `status` ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
   `pin` VARCHAR(255) NULL,
   `avatar` VARCHAR(255) NULL,
+  `google_id` VARCHAR(255) NULL,
+  `auth_provider` ENUM('local', 'google') DEFAULT 'local',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
   UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `phone` (`phone`)
+  UNIQUE KEY `phone` (`phone`),
+  UNIQUE KEY `google_id` (`google_id`)
 ) ENGINE=InnoDB;
 
 -- -----------------------------------------------------

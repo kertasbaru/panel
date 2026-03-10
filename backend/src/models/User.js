@@ -25,12 +25,12 @@ const User = sequelize.define('User', {
   },
   phone: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   role: {
     type: DataTypes.ENUM('admin', 'agen', 'member'),
@@ -45,6 +45,15 @@ const User = sequelize.define('User', {
   },
   avatar: {
     type: DataTypes.STRING,
+  },
+  google_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
+  auth_provider: {
+    type: DataTypes.ENUM('local', 'google'),
+    defaultValue: 'local',
   },
 }, {
   tableName: 'users',
