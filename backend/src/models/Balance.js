@@ -10,6 +10,7 @@ const Balance = sequelize.define('Balance', {
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    unique: true,
   },
   amount: {
     type: DataTypes.DECIMAL(15, 2),

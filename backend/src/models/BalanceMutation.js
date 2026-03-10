@@ -27,6 +27,7 @@ const BalanceMutation = sequelize.define('BalanceMutation', {
     type: DataTypes.DECIMAL(15, 2),
     allowNull: false,
   },
+  // Polymorphic reference: 'Transaction', 'Deposit', etc.
   reference_type: {
     type: DataTypes.STRING,
   },
