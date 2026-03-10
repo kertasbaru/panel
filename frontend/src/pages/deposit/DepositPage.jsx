@@ -4,10 +4,10 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import AnimatedPage, { fadeInUp } from '../../components/common/AnimatedPage';
+import { formatCurrency } from '../../utils/formatCurrency';
 import { HiOutlineCash, HiOutlineInformationCircle, HiOutlineCreditCard, HiOutlineDeviceMobile } from 'react-icons/hi';
 
 const amounts = [50000, 100000, 200000, 500000, 1000000, 2000000];
-const formatCurrency = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
 const paymentMethods = [
   { id: 'bank', label: 'Transfer Bank', icon: HiOutlineCreditCard },

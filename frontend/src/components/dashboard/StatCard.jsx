@@ -8,7 +8,7 @@ const colorMap = {
 };
 
 const StatCard = ({ title, value, icon: Icon, color = 'blue' }) => {
-  const c = colorMap[color] || colorMap.blue;
+  const colorClasses = colorMap[color] || colorMap.blue;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
@@ -17,7 +17,7 @@ const StatCard = ({ title, value, icon: Icon, color = 'blue' }) => {
           <p className="text-sm text-gray-500 font-medium">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
         </div>
-        <div className={clsx('p-3 rounded-xl bg-gradient-to-br shadow-sm', c.gradient)}>
+        <div className={clsx('p-3 rounded-xl bg-gradient-to-br shadow-sm', colorClasses.gradient)}>
           {Icon && <Icon className="w-6 h-6 text-white" />}
         </div>
       </div>

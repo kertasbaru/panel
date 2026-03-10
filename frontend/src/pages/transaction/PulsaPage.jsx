@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Button from '../../components/common/Button';
 import AnimatedPage, { staggerContainer, fadeInUp } from '../../components/common/AnimatedPage';
+import { formatCurrency } from '../../utils/formatCurrency';
 import { HiOutlineDeviceMobile, HiOutlineSearch, HiOutlineWifi, HiOutlinePhone } from 'react-icons/hi';
 
 const sampleProducts = [
@@ -14,8 +15,6 @@ const sampleProducts = [
   { id: 7, name: 'Data 3GB/30hr', price: 35000, brand: 'All Operator', type: 'data' },
   { id: 8, name: 'Data 10GB/30hr', price: 75000, brand: 'All Operator', type: 'data' },
 ];
-
-const formatCurrency = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
 const PulsaPage = () => {
   const [phone, setPhone] = useState('');
