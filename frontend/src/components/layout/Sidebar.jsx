@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineHome, HiOutlineDeviceMobile, HiOutlineClock, HiOutlineCash, HiOutlineUser, HiOutlineCog, HiOutlineLogout, HiOutlineDocumentReport, HiOutlineUsers, HiOutlineLightningBolt } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineDeviceMobile, HiOutlineClock, HiOutlineCash, HiOutlineUser, HiOutlineCog, HiOutlineLogout, HiOutlineDocumentReport, HiOutlineUsers } from 'react-icons/hi';
 import { useAuthStore } from '../../store/authSlice';
 import { APP_NAME } from '../../utils/constants';
 import clsx from 'clsx';
@@ -35,9 +35,7 @@ const Sidebar = () => {
     <aside className="w-64 bg-white border-r border-gray-100 min-h-screen p-4 flex flex-col">
       {/* Brand */}
       <div className="flex items-center gap-3 px-3 py-2 mb-6">
-        <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
-          <HiOutlineLightningBolt className="w-5 h-5 text-white" />
-        </div>
+        <img src="/icon.png" alt={APP_NAME} className="w-9 h-9 rounded-xl shadow-sm" />
         <span className="text-lg font-bold text-gray-900">{APP_NAME}</span>
       </div>
 

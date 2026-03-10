@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom';
 import { APP_NAME } from '../../utils/constants';
-import { HiOutlineLightningBolt } from 'react-icons/hi';
 
 const AuthLayout = () => {
   return (
@@ -13,9 +12,7 @@ const AuthLayout = () => {
         <div className="absolute top-[40%] left-[60%] w-[25%] h-[25%] rounded-full bg-white/5 animate-pulse-slow" />
 
         <div className="relative z-10 flex flex-col justify-center items-center w-full px-12 text-white">
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center mb-8 shadow-2xl border border-white/20">
-            <HiOutlineLightningBolt className="w-10 h-10 text-white" />
-          </div>
+          <img src="/icon.png" alt={APP_NAME} className="w-20 h-20 rounded-3xl mb-8 shadow-2xl" />
           <h1 className="text-4xl font-bold mb-4 text-center">{APP_NAME}</h1>
           <p className="text-lg text-white/80 text-center max-w-md leading-relaxed">
             Platform pembayaran digital terpercaya untuk pulsa, paket data, token listrik, dan berbagai layanan PPOB lainnya.
@@ -43,9 +40,7 @@ const AuthLayout = () => {
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <HiOutlineLightningBolt className="w-6 h-6 text-white" />
-              </div>
+              <img src="/icon.png" alt={APP_NAME} className="w-10 h-10 rounded-xl" />
               <span className="text-2xl font-bold text-gray-900">{APP_NAME}</span>
             </div>
           </div>
