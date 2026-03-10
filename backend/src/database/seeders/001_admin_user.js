@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   async up(queryInterface) {
-    const hashedPassword = await bcrypt.hash('admin123', 12);
+    const hashedPassword = await bcrypt.hash('admin123', 10);
     await queryInterface.bulkInsert('users', [{
       uuid: uuidv4(),
       name: 'Administrator',

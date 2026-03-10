@@ -1,5 +1,8 @@
 const { DataTypes } = require('sequelize');
+const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
+
+const SALT_ROUNDS = 10;
 
 const User = sequelize.define('User', {
   id: {
@@ -47,6 +50,37 @@ const User = sequelize.define('User', {
   tableName: 'users',
   underscored: true,
   timestamps: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
+      }
+      if (user.pin) {
+        user.pin = await bcrypt.hash(user.pin, SALT_ROUNDS);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
+      }
+      if (user.changed('pin')) {
+        user.pin = await bcrypt.hash(user.pin, SALT_ROUNDS);
+      }
+    },
+  },
 });
+
+User.prototype.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+User.prototype.comparePin = async function (candidatePin) {
+  return bcrypt.compare(candidatePin, this.pin);
+};
+
+User.prototype.toSafeObject = function () {
+  const { password, pin, ...safeUser } = this.toJSON();
+  return safeUser;
+};
 
 module.exports = User;

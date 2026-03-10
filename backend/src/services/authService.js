@@ -1,36 +1,166 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { User, Balance } = require('../models');
+const jwtConfig = require('../config/jwt');
+
+const SALT_ROUNDS = 10;
+
+const generateTokens = (user) => {
+  const payload = { id: user.id, uuid: user.uuid, email: user.email, role: user.role };
+
+  const accessToken = jwt.sign(payload, jwtConfig.accessSecret, {
+    expiresIn: jwtConfig.accessExpiry,
+  });
+
+  const refreshToken = jwt.sign(payload, jwtConfig.refreshSecret, {
+    expiresIn: jwtConfig.refreshExpiry,
+  });
+
+  return { accessToken, refreshToken };
+};
+
 const register = async (data) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  const { name, email, phone, password } = data;
+
+  const existingUser = await User.findOne({ where: { email } });
+  if (existingUser) {
+    const err = new Error('Email sudah terdaftar');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const existingPhone = await User.findOne({ where: { phone } });
+  if (existingPhone) {
+    const err = new Error('Nomor telepon sudah terdaftar');
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const user = await User.create({ name, email, phone, password });
+
+  await Balance.create({ user_id: user.id, amount: 0 });
+
+  const tokens = generateTokens(user);
+
+  return {
+    user: user.toSafeObject(),
+    ...tokens,
+  };
 };
 
 const login = async (data) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  const { email, password } = data;
+
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    const err = new Error('Email atau password salah');
+    err.statusCode = 401;
+    throw err;
+  }
+
+  if (user.status !== 'active') {
+    const err = new Error('Akun Anda tidak aktif');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    const err = new Error('Email atau password salah');
+    err.statusCode = 401;
+    throw err;
+  }
+
+  const tokens = generateTokens(user);
+
+  return {
+    user: user.toSafeObject(),
+    ...tokens,
+  };
 };
 
 const logout = async (user) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  return null;
 };
 
 const refreshToken = async (data) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  const { refreshToken: token } = data;
+
+  if (!token) {
+    const err = new Error('Refresh token diperlukan');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  try {
+    const decoded = jwt.verify(token, jwtConfig.refreshSecret);
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      const err = new Error('User tidak ditemukan');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const tokens = generateTokens(user);
+    return tokens;
+  } catch (error) {
+    if (error.statusCode) throw error;
+    const err = new Error('Refresh token tidak valid');
+    err.statusCode = 401;
+    throw err;
+  }
 };
 
 const forgotPassword = async (data) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  const { email } = data;
+
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    return { message: 'Jika email terdaftar, link reset password akan dikirim' };
+  }
+
+  return { message: 'Jika email terdaftar, link reset password akan dikirim' };
 };
 
 const resetPassword = async (data) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  const { token, password } = data;
+
+  try {
+    const decoded = jwt.verify(token, jwtConfig.accessSecret);
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      const err = new Error('User tidak ditemukan');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    await user.update({ password: hashedPassword });
+
+    return null;
+  } catch (error) {
+    if (error.statusCode) throw error;
+    const err = new Error('Token reset tidak valid atau sudah kedaluwarsa');
+    err.statusCode = 400;
+    throw err;
+  }
 };
 
 const getMe = async (user) => {
-  // TODO: Implement
-  throw new Error('Not implemented yet');
+  const userData = await User.findByPk(user.id, {
+    attributes: { exclude: ['password', 'pin'] },
+    include: [{ model: Balance, attributes: ['amount'] }],
+  });
+
+  if (!userData) {
+    const err = new Error('User tidak ditemukan');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return userData;
 };
 
 module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe };
