@@ -12,7 +12,8 @@ Website PPOB adalah platform pembayaran online yang memungkinkan pengguna untuk 
 | Frontend | React.js (Vite) + TailwindCSS |
 | Database | MySQL (Sequelize ORM) |
 | Cache & Session | Redis |
-| Autentikasi | JWT (JSON Web Token) |
+| Autentikasi | JWT (JSON Web Token) + OTP Email |
+| Email Service | Google Gmail API (OAuth2, googleapis) |
 | Payment Gateway | Midtrans / Xendit |
 | API Provider PPOB | DigiFlazz / MobilePulsa / IAK |
 
@@ -93,9 +94,12 @@ backend/
 │   │   ├── depositService.js    # Logika bisnis deposit
 │   │   ├── ppobService.js       # Integrasi API provider PPOB
 │   │   ├── paymentService.js    # Integrasi payment gateway
+│   │   ├── emailService.js      # Pengiriman email via Google Gmail API (OAuth2)
+│   │   ├── otpService.js        # Generasi & verifikasi OTP (Redis)
 │   │   ├── notificationService.js # Logika bisnis notifikasi
 │   │   ├── reportService.js     # Logika bisnis laporan
 │   │   ├── cacheService.js      # Service Redis caching
+│   │   ├── settingService.js    # Logika bisnis pengaturan
 │   │   └── webhookService.js    # Pengelolaan callback/webhook
 │   │
 │   ├── routes/
@@ -249,6 +253,7 @@ frontend/
 │   │   ├── auth/
 │   │   │   ├── LoginPage.jsx    # Halaman login
 │   │   │   ├── RegisterPage.jsx # Halaman register
+│   │   │   ├── VerifyOTPPage.jsx # Halaman verifikasi OTP email
 │   │   │   └── ForgotPasswordPage.jsx # Halaman lupa password
 │   │   │
 │   │   ├── dashboard/
@@ -502,7 +507,9 @@ frontend/
 
 | Method | Endpoint | Keterangan |
 |--------|----------|------------|
-| POST | `/api/auth/register` | Registrasi pengguna baru |
+| POST | `/api/auth/register` | Registrasi pengguna baru (mengirim OTP ke email) |
+| POST | `/api/auth/verify-otp` | Verifikasi kode OTP email |
+| POST | `/api/auth/resend-otp` | Kirim ulang kode OTP email |
 | POST | `/api/auth/login` | Login pengguna |
 | POST | `/api/auth/logout` | Logout pengguna |
 | POST | `/api/auth/refresh-token` | Refresh JWT token |
@@ -615,7 +622,8 @@ Redis digunakan untuk:
 | Cache Produk | `products:{categorySlug}` | 1 jam | Cache daftar produk |
 | Cache Harga | `price:{productCode}` | 30 menit | Cache harga produk |
 | Lock Transaksi | `lock:trx:{userId}` | 30 detik | Mencegah transaksi ganda |
-| OTP | `otp:{phone}` | 5 menit | Menyimpan kode OTP |
+| OTP Email | `otp:{email}` | 5 menit | Menyimpan kode OTP verifikasi email |
+| OTP Attempts | `otp_attempts:{email}` | 5 menit | Jumlah percobaan verifikasi OTP (maks 5) |
 | Token Blacklist | `blacklist:{token}` | Sisa masa berlaku JWT | Token yang sudah di-revoke |
 | Dashboard Stats | `stats:dashboard:{userId}` | 5 menit | Cache statistik dashboard |
 
@@ -625,7 +633,7 @@ Redis digunakan untuk:
 
 ### 7.1 Fitur Member/Agen
 
-- [x] Registrasi & login
+- [x] Registrasi & login (dengan verifikasi OTP email)
 - [x] Dashboard (statistik transaksi, saldo, grafik)
 - [x] Pembelian pulsa & paket data
 - [x] Token listrik PLN (prepaid)
@@ -652,7 +660,49 @@ Redis digunakan untuk:
 
 ## 8. Alur Kerja (Workflow)
 
-### 8.1 Alur Transaksi Prepaid (Pulsa, Token PLN)
+### 8.1 Alur Registrasi dengan Verifikasi OTP Email
+
+```
+User Isi Form Registrasi (nama, email, phone, password)
+        │
+        ▼
+Validasi Input (Joi Middleware)
+        │
+        ▼
+Cek Email & Phone Belum Terdaftar
+        │
+        ▼
+Buat User dengan Status "inactive"
+        │
+        ▼
+Generate OTP 6 Digit (crypto.randomInt)
+        │
+        ▼
+Simpan OTP di Redis (key: otp:{email}, TTL: 5 menit)
+        │
+        ▼
+Kirim OTP ke Email via Google Gmail API (OAuth2)
+        │
+        ▼
+User Input Kode OTP di Halaman Verifikasi
+        │
+        ▼
+    ┌───┴───┐
+    │       │
+ Valid    Invalid
+    │       │
+    ▼       ▼
+Aktifkan  Error (maks 5 percobaan)
+ User     │
+    │     ▼
+    ▼   Kirim Ulang OTP
+Generate JWT Token
+    │
+    ▼
+Redirect ke Dashboard
+```
+
+### 8.2 Alur Transaksi Prepaid (Pulsa, Token PLN)
 
 ```
 User Input Nomor & Pilih Produk
@@ -690,7 +740,7 @@ Kirim Notifikasi ke User
 Release Lock Redis
 ```
 
-### 8.2 Alur Deposit Saldo
+### 8.3 Alur Deposit Saldo
 
 ```
 User Pilih Metode & Nominal Deposit
@@ -727,7 +777,7 @@ Kirim Notifikasi ke User
 | Aspek | Implementasi |
 |-------|-------------|
 | Autentikasi | JWT dengan access token (15 menit) & refresh token (7 hari) |
-| Password | Bcrypt hash dengan salt rounds 12 |
+| Password | Bcrypt hash dengan salt rounds 10 |
 | PIN Transaksi | Hash PIN terpisah untuk konfirmasi transaksi |
 | Rate Limiting | Redis-based rate limiter (100 req/menit per IP) |
 | Input Validation | Joi/express-validator di setiap endpoint |
@@ -783,6 +833,12 @@ MIDTRANS_IS_PRODUCTION=false
 # Encryption
 ENCRYPTION_KEY=your_32_char_encryption_key
 
+# Google Gmail API (OAuth2)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REFRESH_TOKEN=your_google_refresh_token
+GOOGLE_EMAIL=your_email@gmail.com
+
 # Rate Limiting
 RATE_LIMIT_WINDOW=60
 RATE_LIMIT_MAX=100
@@ -794,6 +850,7 @@ RATE_LIMIT_MAX=100
 VITE_API_URL=http://localhost:3000/api
 VITE_APP_NAME=PPOB Platform
 VITE_MIDTRANS_CLIENT_KEY=your_client_key
+VITE_URL=https://wuzzstore.my.id
 ```
 
 ---
@@ -823,7 +880,8 @@ VITE_MIDTRANS_CLIENT_KEY=your_client_key
     "uuid": "^9.0.x",
     "express-rate-limit": "^7.1.x",
     "rate-limit-redis": "^4.2.x",
-    "midtrans-client": "^1.3.x"
+    "midtrans-client": "^1.3.x",
+    "googleapis": "^171.4.x"
   },
   "devDependencies": {
     "nodemon": "^3.0.x",
@@ -869,20 +927,21 @@ VITE_MIDTRANS_CLIENT_KEY=your_client_key
 
 ### Fase 1 — Fondasi (Minggu 1–2)
 
-- [ ] Setup proyek backend (Express.js, Sequelize, Redis)
-- [ ] Setup proyek frontend (Vite, React, TailwindCSS)
-- [ ] Desain & migrasi database MySQL
-- [ ] Implementasi model Sequelize & relasi
-- [ ] Setup Redis connection & caching service
-- [ ] Konfigurasi environment variables
+- [x] Setup proyek backend (Express.js, Sequelize, Redis)
+- [x] Setup proyek frontend (Vite, React, TailwindCSS)
+- [x] Desain & migrasi database MySQL
+- [x] Implementasi model Sequelize & relasi
+- [x] Setup Redis connection & caching service
+- [x] Konfigurasi environment variables
 
 ### Fase 2 — Autentikasi & Manajemen User (Minggu 3)
 
-- [ ] Implementasi registrasi & login (JWT)
-- [ ] Middleware autentikasi & otorisasi
-- [ ] Halaman login & register (frontend)
-- [ ] Manajemen profil pengguna
-- [ ] Sistem role (admin, agen, member)
+- [x] Implementasi registrasi & login (JWT)
+- [x] Verifikasi email dengan OTP via Google Gmail API (OAuth2)
+- [x] Middleware autentikasi & otorisasi
+- [x] Halaman login, register, & verifikasi OTP (frontend)
+- [x] Manajemen profil pengguna
+- [x] Sistem role (admin, agen, member)
 
 ### Fase 3 — Produk & Kategori (Minggu 4)
 
@@ -961,4 +1020,5 @@ Berikut beberapa repositori GitHub yang dapat dijadikan referensi arsitektur dan
 5. **Logging** — Gunakan Winston untuk logging yang terstruktur dan bisa ditelusuri.
 6. **Database transactions** — Gunakan Sequelize transaction untuk operasi yang melibatkan banyak tabel.
 7. **Caching strategy** — Cache data yang jarang berubah (produk, harga) dan invalidasi saat ada update.
-8. **Monitoring** — Pertimbangkan penggunaan PM2 untuk process management di production.
+8. **Email service** — Pengiriman email menggunakan Google Gmail API (googleapis) dengan OAuth2, tanpa nodemailer. OTP disimpan di Redis dengan TTL 5 menit dan maksimal 5 percobaan verifikasi.
+9. **Monitoring** — Pertimbangkan penggunaan PM2 untuk process management di production.

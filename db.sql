@@ -2,6 +2,9 @@
 -- Database: ppob_db
 -- Perintah SQL untuk membuat semua tabel
 -- =====================================================
+-- Catatan: OTP verifikasi email disimpan di Redis 
+-- (key: otp:{email}, TTL: 5 menit), bukan di database.
+-- =====================================================
 
 CREATE DATABASE IF NOT EXISTS ppob_db;
 USE ppob_db;
