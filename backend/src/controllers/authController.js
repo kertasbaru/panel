@@ -64,4 +64,22 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe };
+const verifyOTP = async (req, res, next) => {
+  try {
+    const result = await authService.verifyOTP(req.body);
+    return success(res, result, 'Verifikasi OTP berhasil');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resendOTP = async (req, res, next) => {
+  try {
+    const result = await authService.resendOTP(req.body);
+    return success(res, result, 'OTP berhasil dikirim ulang');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe, verifyOTP, resendOTP };

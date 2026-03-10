@@ -21,4 +21,13 @@ const resetPassword = Joi.object({
   password: Joi.string().min(8).required(),
 });
 
-module.exports = { register, login, forgotPassword, resetPassword };
+const verifyOTP = Joi.object({
+  email: Joi.string().email().required(),
+  otp: Joi.string().length(6).required(),
+});
+
+const resendOTP = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+module.exports = { register, login, forgotPassword, resetPassword, verifyOTP, resendOTP };

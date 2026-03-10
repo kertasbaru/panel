@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User, Balance } = require('../models');
 const jwtConfig = require('../config/jwt');
+const otpService = require('./otpService');
+const emailService = require('./emailService');
 
 const generateTokens = (user) => {
   const payload = { id: user.id, uuid: user.uuid, email: user.email, role: user.role };
@@ -34,15 +36,15 @@ const register = async (data) => {
     throw err;
   }
 
-  const user = await User.create({ name, email, phone, password });
+  const user = await User.create({ name, email, phone, password, status: 'inactive' });
 
   await Balance.create({ user_id: user.id, amount: 0 });
 
-  const tokens = generateTokens(user);
+  const otp = await otpService.generateAndStore(email);
+  await emailService.sendOTP(email, otp);
 
   return {
     user: user.toSafeObject(),
-    ...tokens,
   };
 };
 
@@ -160,4 +162,54 @@ const getMe = async (user) => {
   return userData;
 };
 
-module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe };
+const verifyOTP = async (data) => {
+  const { email, otp } = data;
+
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    const err = new Error('User tidak ditemukan');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (user.status === 'active') {
+    const err = new Error('Akun sudah terverifikasi');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  await otpService.verify(email, otp);
+
+  await user.update({ status: 'active' });
+
+  const tokens = generateTokens(user);
+
+  return {
+    user: user.toSafeObject(),
+    ...tokens,
+  };
+};
+
+const resendOTP = async (data) => {
+  const { email } = data;
+
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    const err = new Error('User tidak ditemukan');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (user.status !== 'inactive') {
+    const err = new Error('Akun sudah aktif atau tidak memerlukan verifikasi');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const otp = await otpService.generateAndStore(email);
+  await emailService.sendOTP(email, otp);
+
+  return null;
+};
+
+module.exports = { register, login, logout, refreshToken, forgotPassword, resetPassword, getMe, verifyOTP, resendOTP };
