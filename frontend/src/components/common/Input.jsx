@@ -1,6 +1,10 @@
 import clsx from 'clsx';
 
-const Input = ({ label, name, type = 'text', placeholder, error, register, className }) => {
+const Input = ({ label, name, type = 'text', placeholder, error, register, value, onChange, disabled, className }) => {
+  const inputProps = register
+    ? register(name)
+    : { name, value: value ?? '', onChange: onChange ? (e) => onChange(e.target.value) : undefined };
+
   return (
     <div className={clsx('mb-4', className)}>
       {label && (
@@ -12,10 +16,12 @@ const Input = ({ label, name, type = 'text', placeholder, error, register, class
         id={name}
         type={type}
         placeholder={placeholder}
-        {...(register ? register(name) : { name })}
+        disabled={disabled}
+        {...inputProps}
         className={clsx(
           'w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors',
-          error ? 'border-red-500' : 'border-gray-300'
+          error ? 'border-red-500' : 'border-gray-300',
+          disabled && 'bg-gray-100 cursor-not-allowed'
         )}
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
