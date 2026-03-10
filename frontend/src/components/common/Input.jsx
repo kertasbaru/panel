@@ -3,7 +3,7 @@ import clsx from 'clsx';
 const Input = ({ label, name, type = 'text', placeholder, error, register, value, onChange, disabled, className }) => {
   const inputProps = register
     ? register(name)
-    : { name, value: value ?? '', onChange: onChange ? (e) => onChange(e.target.value) : undefined };
+    : { name, value: value ?? '', onChange: onChange ? (e) => onChange(e.target.value) : () => {} };
 
   return (
     <div className={clsx('mb-4', className)}>

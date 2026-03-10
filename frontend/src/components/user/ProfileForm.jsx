@@ -35,7 +35,7 @@ const ProfileForm = () => {
   return (
     <div className="space-y-4">
       <Input label="Nama Lengkap" name="name" value={formData.name} onChange={handleChange('name')} />
-      <Input label="Email" name="email" type="email" value={formData.email} onChange={handleChange('email')} disabled />
+      <Input label="Email" name="email" type="email" value={formData.email} disabled />
       <Input label="No. Handphone" name="phone" value={formData.phone} onChange={handleChange('phone')} />
       <Button onClick={handleSubmit} loading={loading}>Simpan Perubahan</Button>
     </div>
