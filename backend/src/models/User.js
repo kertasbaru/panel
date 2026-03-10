@@ -75,6 +75,7 @@ User.prototype.comparePassword = async function (candidatePassword) {
 };
 
 User.prototype.comparePin = async function (candidatePin) {
+  if (!this.pin) return false;
   return bcrypt.compare(candidatePin, this.pin);
 };
 

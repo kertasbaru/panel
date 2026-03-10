@@ -2,8 +2,6 @@ const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { getPagination, getPagingData } = require('../utils/pagination');
 
-const SALT_ROUNDS = 10;
-
 const getAll = async (query) => {
   const { page, limit, offset } = getPagination(query);
 
@@ -64,8 +62,7 @@ const changePassword = async (data, user) => {
     throw err;
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  await currentUser.update({ password: hashedPassword });
+  await currentUser.update({ password: newPassword });
 
   return null;
 };
@@ -95,8 +92,7 @@ const changePin = async (data, user) => {
     }
   }
 
-  const hashedPin = await bcrypt.hash(newPin, SALT_ROUNDS);
-  await currentUser.update({ pin: hashedPin });
+  await currentUser.update({ pin: newPin });
 
   return null;
 };

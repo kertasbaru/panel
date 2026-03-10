@@ -3,8 +3,6 @@ const jwt = require('jsonwebtoken');
 const { User, Balance } = require('../models');
 const jwtConfig = require('../config/jwt');
 
-const SALT_ROUNDS = 10;
-
 const generateTokens = (user) => {
   const payload = { id: user.id, uuid: user.uuid, email: user.email, role: user.role };
 
@@ -136,8 +134,7 @@ const resetPassword = async (data) => {
       throw err;
     }
 
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    await user.update({ password: hashedPassword });
+    await user.update({ password });
 
     return null;
   } catch (error) {
